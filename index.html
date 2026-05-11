@@ -43,56 +43,73 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--tx);min-heigh
 #topbar .phase{font-size:11px;color:#8AAFD4;font-weight:500}
 
 /* ── Layout ────────────────────────────────────────────────────────── */
-#layout{display:flex;margin-top:60px;min-height:calc(100vh - 60px)}
+#layout{margin-top:60px;min-height:calc(100vh - 60px)}
 
-/* ── Left sidebar — Stakeholders ──────────────────────────────────── */
-#sidebar{
-  width:250px;flex-shrink:0;background:var(--navy);
-  border-right:1px solid rgba(255,255,255,.07);
-  display:flex;flex-direction:column;
-  position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;
+/* ── Sticky top navigation stack ───────────────────────────────────── */
+#nav-stack{
+  position:sticky;top:60px;z-index:95;background:var(--wh);
+  box-shadow:0 4px 16px rgba(13,27,46,.08);
 }
-.sidebar-section{padding:20px 16px 8px;font-size:10px;font-weight:600;letter-spacing:2px;color:#4A6A8A;text-transform:uppercase}
+
+/* ── Top navigation — Stakeholders ────────────────────────────────── */
+#stakeholder-nav{
+  background:var(--wh);
+  border-bottom:1px solid var(--gy2);
+  padding:16px 28px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.nav-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.nav-label{
+  font-size:11px;font-weight:800;color:var(--gy);text-transform:uppercase;
+  letter-spacing:1.2px;margin-right:4px;white-space:nowrap;
+}
 .stakeholder-btn{
-  display:flex;align-items:center;gap:12px;padding:12px 16px;
-  border:none;background:none;width:100%;text-align:left;cursor:pointer;
-  border-radius:8px;margin:1px 8px;width:calc(100% - 16px);
-  transition:all .2s;position:relative;
+  display:flex;align-items:center;gap:12px;padding:10px 16px;
+  border:1.5px solid var(--gy2);background:transparent;text-align:left;cursor:pointer;
+  border-radius:999px;transition:all .18s ease;position:relative;
+  min-height:56px;
 }
-.stakeholder-btn:hover{background:rgba(255,255,255,.06)}
-.stakeholder-btn.active{background:rgba(200,150,12,.12);border-left:3px solid var(--go)}
+.stakeholder-btn:hover{background:#F8FBFF;border-color:#B8C7DA;transform:translateY(-1px)}
+.stakeholder-btn.active{
+  background:var(--navy);border-color:var(--navy);
+  box-shadow:0 4px 14px rgba(16,30,53,.22);
+}
 .stakeholder-btn .icon{
-  width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
-  justify-content:center;font-size:18px;flex-shrink:0;
+  width:34px;height:34px;border-radius:999px;display:flex;align-items:center;
+  justify-content:center;font-size:17px;flex-shrink:0;
 }
-.stakeholder-btn .info .name{font-size:13px;font-weight:600;color:#E2E8F0;line-height:1.2}
-.stakeholder-btn .info .role{font-size:10.5px;color:#64748B;margin-top:2px;font-weight:400}
-.stakeholder-btn.active .info .name{color:var(--go)}
-.sidebar-divider{height:1px;background:rgba(255,255,255,.06);margin:8px 16px}
+.stakeholder-btn .info{display:flex;flex-direction:column;gap:2px}
+.stakeholder-btn .info .name{font-size:13px;font-weight:700;color:var(--tx);line-height:1.2;white-space:nowrap}
+.stakeholder-btn .info .role{font-size:10.5px;color:var(--gy);font-weight:500;white-space:nowrap}
+.stakeholder-btn.active .info .name{color:var(--wh)}
+.stakeholder-btn.active .info .role{color:#B7C8E6}
 
 /* ── Main content ──────────────────────────────────────────────────── */
-#main{flex:1;min-width:0;display:flex;flex-direction:column}
+#main{width:100%;display:flex;flex-direction:column}
 
 /* ── Content tabs nav ──────────────────────────────────────────────── */
 #tabs-nav{
   background:var(--wh);border-bottom:1px solid var(--gy2);
-  display:flex;align-items:center;padding:0 28px;gap:4px;
-  position:sticky;top:60px;z-index:90;overflow-x:auto;
+  display:flex;align-items:center;flex-wrap:wrap;padding:14px 28px;gap:10px;
 }
 .tab-btn{
-  padding:14px 18px;border:none;background:none;cursor:pointer;
-  font-family:var(--font-body);font-size:13px;font-weight:500;
-  color:var(--gy);white-space:nowrap;border-bottom:3px solid transparent;
-  transition:all .2s;display:flex;align-items:center;gap:7px;
+  padding:10px 18px;border:1.5px solid var(--gy2);background:transparent;cursor:pointer;
+  font-family:var(--font-body);font-size:13px;font-weight:700;
+  color:var(--gy);white-space:nowrap;border-radius:999px;
+  transition:all .18s ease;display:flex;align-items:center;gap:7px;
 }
-.tab-btn:hover{color:var(--bb)}
-.tab-btn.active{color:var(--bb);border-bottom-color:var(--go);font-weight:600}
+.tab-btn:hover{color:var(--bb);background:#F0F5FF;border-color:#B0C4DC}
+.tab-btn.active{
+  color:var(--wh);background:var(--navy);border-color:var(--navy);
+  box-shadow:0 4px 14px rgba(16,30,53,.22);
+}
 .tab-btn .ticon{font-size:15px}
 .tabs-spacer{flex:1}
-.doc-count{font-size:10px;background:var(--lb);color:var(--bb);padding:2px 7px;border-radius:10px;font-weight:700}
+.doc-count{font-size:10px;background:rgba(27,58,107,.12);color:currentColor;padding:2px 7px;border-radius:10px;font-weight:700}
+.tab-btn.active .doc-count{background:rgba(255,255,255,.16);color:var(--wh)}
 
 /* ── Content panel ─────────────────────────────────────────────────── */
-#content{flex:1;padding:28px;overflow-y:auto}
+#content{flex:1;padding:28px;max-width:1440px;width:100%;margin:0 auto}
 
 /* ── Hero banner ───────────────────────────────────────────────────── */
 .hero{
@@ -282,6 +299,11 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--tx);min-heigh
 .mb16{margin-bottom:16px}.mb24{margin-bottom:24px}.mb32{margin-bottom:32px}
 .flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.items-center{align-items:center}
 .text-gy{color:var(--gy)}
+@media(max-width:900px){
+  #stakeholder-nav,#tabs-nav{padding-left:18px;padding-right:18px}
+  #content{padding:20px 18px 28px}
+  .stakeholder-btn .info .role{display:none}
+}
 </style>
 </head>
 <body>
@@ -297,60 +319,60 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--tx);min-heigh
 <!-- LAYOUT -->
 <div id="layout">
 
-  <!-- SIDEBAR -->
-  <nav id="sidebar">
-    <div class="sidebar-section">Stakeholders</div>
-
-    <button class="stakeholder-btn active" data-sh="student" onclick="selectStakeholder(this)">
-      <div class="icon" style="background:rgba(27,58,107,.3)">🎓</div>
-      <div class="info"><div class="name">Students</div><div class="role">LLB · LPT · Post-Call</div></div>
-    </button>
-    <button class="stakeholder-btn" data-sh="academic" onclick="selectStakeholder(this)">
-      <div class="icon" style="background:rgba(0,96,100,.3)">📚</div>
-      <div class="info"><div class="name">Academic Staff</div><div class="role">Faculty & Lecturers</div></div>
-    </button>
-    <button class="stakeholder-btn" data-sh="librarian" onclick="selectStakeholder(this)">
-      <div class="icon" style="background:rgba(46,125,50,.3)">🏛️</div>
-      <div class="info"><div class="name">LRKS Librarians</div><div class="role">Circulation & Reference</div></div>
-    </button>
-    <button class="stakeholder-btn" data-sh="external" onclick="selectStakeholder(this)">
-      <div class="icon" style="background:rgba(91,33,182,.3)">⚖️</div>
-      <div class="info"><div class="name">External Patrons</div><div class="role">Legal Practitioners</div></div>
-    </button>
-    <button class="stakeholder-btn" data-sh="admin_staff" onclick="selectStakeholder(this)">
-      <div class="icon" style="background:rgba(229,57,53,.2)">🏢</div>
-      <div class="info"><div class="name">Admin Staff</div><div class="role">CLET Administration</div></div>
-    </button>
-    <button class="stakeholder-btn" data-sh="finance" onclick="selectStakeholder(this)">
-      <div class="icon" style="background:rgba(200,150,12,.2)">💳</div>
-      <div class="info"><div class="name">Finance Directorate</div><div class="role">Cluster C8 · FMS</div></div>
-    </button>
-    <button class="stakeholder-btn" data-sh="dti" onclick="selectStakeholder(this)">
-      <div class="icon" style="background:rgba(14,116,144,.3)">⚙️</div>
-      <div class="info"><div class="name">DTI / System Admin</div><div class="role">Infrastructure & Ops</div></div>
-    </button>
-
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-section">System</div>
-    <button class="stakeholder-btn" data-sh="overview" onclick="selectStakeholder(this)">
-      <div class="icon" style="background:rgba(255,255,255,.08)">🗺️</div>
-      <div class="info"><div class="name">System Overview</div><div class="role">All 18 C5 Systems</div></div>
-    </button>
-  </nav>
-
-  <!-- MAIN -->
   <div id="main">
+    <div id="nav-stack">
+      <nav id="stakeholder-nav">
+        <div class="nav-row">
+          <span class="nav-label">Stakeholders</span>
+          <button class="stakeholder-btn active" data-sh="student" onclick="selectStakeholder(this)">
+            <div class="icon" style="background:rgba(27,58,107,.12)">🎓</div>
+            <div class="info"><div class="name">Students</div><div class="role">LLB · LPT · Post-Call</div></div>
+          </button>
+          <button class="stakeholder-btn" data-sh="academic" onclick="selectStakeholder(this)">
+            <div class="icon" style="background:rgba(0,96,100,.12)">📚</div>
+            <div class="info"><div class="name">Academic Staff</div><div class="role">Faculty & Lecturers</div></div>
+          </button>
+          <button class="stakeholder-btn" data-sh="librarian" onclick="selectStakeholder(this)">
+            <div class="icon" style="background:rgba(46,125,50,.12)">🏛️</div>
+            <div class="info"><div class="name">LRKS Librarians</div><div class="role">Circulation & Reference</div></div>
+          </button>
+          <button class="stakeholder-btn" data-sh="external" onclick="selectStakeholder(this)">
+            <div class="icon" style="background:rgba(91,33,182,.12)">⚖️</div>
+            <div class="info"><div class="name">External Patrons</div><div class="role">Legal Practitioners</div></div>
+          </button>
+          <button class="stakeholder-btn" data-sh="admin_staff" onclick="selectStakeholder(this)">
+            <div class="icon" style="background:rgba(198,40,40,.10)">🏢</div>
+            <div class="info"><div class="name">Admin Staff</div><div class="role">CLET Administration</div></div>
+          </button>
+          <button class="stakeholder-btn" data-sh="finance" onclick="selectStakeholder(this)">
+            <div class="icon" style="background:rgba(200,150,12,.12)">💳</div>
+            <div class="info"><div class="name">Finance Directorate</div><div class="role">Cluster C8 · FMS</div></div>
+          </button>
+          <button class="stakeholder-btn" data-sh="dti" onclick="selectStakeholder(this)">
+            <div class="icon" style="background:rgba(14,116,144,.12)">⚙️</div>
+            <div class="info"><div class="name">DTI / System Admin</div><div class="role">Infrastructure & Ops</div></div>
+          </button>
+        </div>
+        <div class="nav-row">
+          <span class="nav-label">System</span>
+          <button class="stakeholder-btn" data-sh="overview" onclick="selectStakeholder(this)">
+            <div class="icon" style="background:rgba(15,23,42,.08)">🗺️</div>
+            <div class="info"><div class="name">System Overview</div><div class="role">All 18 C5 Systems</div></div>
+          </button>
+        </div>
+      </nav>
 
-    <!-- TABS NAV -->
-    <div id="tabs-nav">
-      <button class="tab-btn active" data-tab="overview-tab" onclick="selectTab(this)"><span class="ticon">🏠</span> Overview</button>
-      <button class="tab-btn" data-tab="screens-tab" onclick="selectTab(this)"><span class="ticon">🖥️</span> UI Screens</button>
-      <button class="tab-btn" data-tab="diagrams-tab" onclick="selectTab(this)"><span class="ticon">📊</span> Diagrams</button>
-      <button class="tab-btn" data-tab="requirements-tab" onclick="selectTab(this)"><span class="ticon">📋</span> Requirements</button>
-      <button class="tab-btn" data-tab="stories-tab" onclick="selectTab(this)"><span class="ticon">📖</span> User Stories</button>
-      <button class="tab-btn" data-tab="roadmap-tab" onclick="selectTab(this)"><span class="ticon">🗓️</span> Roadmap</button>
-      <button class="tab-btn" data-tab="docs-tab" onclick="selectTab(this)"><span class="ticon">📁</span> Documents <span class="doc-count">6</span></button>
-      <div class="tabs-spacer"></div>
+      <!-- TABS NAV -->
+      <div id="tabs-nav">
+        <button class="tab-btn active" data-tab="overview-tab" onclick="selectTab(this)"><span class="ticon">🏠</span> Overview</button>
+        <button class="tab-btn" data-tab="screens-tab" onclick="selectTab(this)"><span class="ticon">🖥️</span> UI Screens</button>
+        <button class="tab-btn" data-tab="diagrams-tab" onclick="selectTab(this)"><span class="ticon">📊</span> Diagrams</button>
+        <button class="tab-btn" data-tab="requirements-tab" onclick="selectTab(this)"><span class="ticon">📋</span> Requirements</button>
+        <button class="tab-btn" data-tab="stories-tab" onclick="selectTab(this)"><span class="ticon">📖</span> User Stories</button>
+        <button class="tab-btn" data-tab="roadmap-tab" onclick="selectTab(this)"><span class="ticon">🗓️</span> Roadmap</button>
+        <button class="tab-btn" data-tab="docs-tab" onclick="selectTab(this)"><span class="ticon">📁</span> Documents <span class="doc-count">6</span></button>
+        <div class="tabs-spacer"></div>
+      </div>
     </div>
 
     <!-- CONTENT PANEL -->
@@ -550,7 +572,7 @@ const STAKEHOLDERS = {
     stats: [
       {num:"10", lbl:"Delivery Team Size", sub:"Ref: DTI/CLET/STAFF/2026/LLS-001", color:"#0E7490"},
       {num:"99.5%", lbl:"Availability SLO", sub:"06:00–23:00 GMT target", color:"#1B3A6B"},
-      {num:"4hr", lbl:"Disaster Recovery RTO", sub:"Active-passive DR architecture", color:"#C62828"},
+      {num:"30mins", lbl:"Disaster Recovery RTO", sub:"Active-passive DR architecture", color:"#C62828"},
       {num:"0", lbl:"Open Critical Findings", sub:"Pen test gate before go-live", color:"#2E7D32"},
     ],
     screens: ["s10"],
