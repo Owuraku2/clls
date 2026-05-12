@@ -167,6 +167,24 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--tx);min-heigh
 .source-note{font-size:11px;color:var(--gy);margin-top:12px;line-height:1.6}
 .source-note strong{color:var(--tx)}
 
+/* ── Detail block (bold, prose-style explanation; replaces card grid) ── */
+.detail-block{
+  background:var(--wh);border-radius:var(--r);padding:24px 28px;
+  box-shadow:var(--sh);margin-bottom:18px;border-left:6px solid var(--bb);
+}
+.detail-block .dbl-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.detail-block .dbl-code{font-family:var(--font-mono);font-size:13px;font-weight:700;padding:3px 10px;border-radius:4px;color:#fff;letter-spacing:.4px}
+.detail-block h3{font-size:22px;font-weight:800;color:var(--tx);letter-spacing:-.2px}
+.detail-block .dbl-systems{font-size:12px;color:var(--gy);margin-top:2px;font-style:italic}
+.detail-block .dbl-purpose{font-size:15px;font-weight:600;color:var(--tx);margin:14px 0 12px;line-height:1.55}
+.detail-block .dbl-detail{font-size:14px;color:var(--tx);line-height:1.75;margin-bottom:14px}
+.detail-block .dbl-row{display:grid;grid-template-columns:160px 1fr;gap:14px;padding:14px 0;border-top:1px solid #E5E7EB}
+.detail-block .dbl-row .dbl-label{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--bb)}
+.detail-block .dbl-row .dbl-body{font-size:14px;color:var(--tx);line-height:1.7}
+@media (max-width: 720px){
+  .detail-block .dbl-row{grid-template-columns:1fr;gap:6px}
+}
+
 /* ── Requirement card ──────────────────────────────────────────────── */
 .req-card{
   background:var(--wh);border-radius:var(--r);padding:18px;
@@ -213,6 +231,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--tx);min-heigh
   box-shadow:var(--sh);overflow:hidden;
 }
 .diagram-viewer img{width:100%;height:auto;display:block;border-radius:8px}
+.diagram-viewer.mermaid-viewer{padding:24px;overflow-x:auto}
+.diagram-viewer pre.mermaid{background:transparent;border:0;margin:0;padding:0;text-align:center;font-family:Arial,sans-serif;font-size:14px;line-height:1.4;color:#0F172A;white-space:pre}
+.diagram-viewer pre.mermaid svg{max-width:100%;height:auto}
 .diagram-viewer .d-caption{margin-top:16px;padding-top:14px;border-top:1px solid var(--gy2);display:flex;align-items:center;justify-content:space-between}
 .diagram-viewer .d-caption .d-title{font-size:14px;font-weight:700;color:var(--bb)}
 .diagram-viewer .d-caption .d-ref-badge{font-family:var(--font-mono);font-size:11px;background:var(--lb);color:var(--bb);padding:3px 10px;border-radius:6px}
@@ -307,6 +328,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--tx);min-heigh
   .stakeholder-btn .info .role{display:none}
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 </head>
 <body>
 
@@ -372,6 +394,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--tx);min-heigh
         <button class="tab-btn" data-tab="requirements-tab" onclick="selectTab(this)"><span class="ticon">📋</span> Requirements</button>
         <button class="tab-btn" data-tab="stories-tab" onclick="selectTab(this)"><span class="ticon">📖</span> User Stories</button>
         <button class="tab-btn" data-tab="roadmap-tab" onclick="selectTab(this)"><span class="ticon">🗓️</span> Roadmap</button>
+        <button class="tab-btn" data-tab="team-tab" onclick="selectTab(this)"><span class="ticon">👥</span> Team</button>
+        <button class="tab-btn" data-tab="infrastructure-tab" onclick="selectTab(this)"><span class="ticon">🖥️</span> Infrastructure</button>
+        <button class="tab-btn" data-tab="dependencies-tab" onclick="selectTab(this)"><span class="ticon">🔗</span> Dependencies</button>
+        <button class="tab-btn" data-tab="costs-tab" onclick="selectTab(this)"><span class="ticon">💰</span> Costs</button>
         <button class="tab-btn" data-tab="docs-tab" onclick="selectTab(this)"><span class="ticon">📁</span> Documents <span class="doc-count">6</span></button>
         <div class="tabs-spacer"></div>
       </div>
@@ -630,6 +656,7 @@ const DIAGRAM_DATA = {
   seq_ai:           {title:"AI Legal-Research Copilot (RAG) — Phase 2",          ref:"SD-03"},
   flow_patron:      {title:"Patron Registration & Onboarding — All Classes",       ref:"FC-01"},
   flow_circulation: {title:"Circulation — Borrow, Renewal, Return & Fine Cycle",  ref:"FC-02"},
+  arch_modules:     {title:"Module Architecture — Modules ↔ Keycloak (S213) ↔ Finance (S141)", ref:"AD-01"},
   user_story_map:   {title:"User Story Map — Activities × Delivery Phases",        ref:"USM-01"},
 };
 
@@ -753,17 +780,47 @@ const TRAINING_PLAN = [
 ];
 
 const DELIVERY_DEPENDENCIES = [
-  "NLEMS (S027), HRMS (S140), IAM (S213), and API Gateway (S217) must expose stable interfaces on time.",
-  "Finance services S141 and S138 are required for payment references, confirmation callbacks, and reconciliation.",
-  "LMS (S029), database vendors, and repository-policy owners affect reading lists, off-campus access, and research workflows.",
-  "Phase 3 RFID depends on stock tagging, floor power/data points, vendor procurement, and library-space readiness."
+  {
+    text: "NLEMS (S027), HRMS (S140), IAM (S213), and API Gateway (S217) must expose stable interfaces on time.",
+    disclaimer: "Interface availability is owned by the upstream system teams; CLLS dates assume ready, contract-tested endpoints. Slippage in any of these systems directly defers Fast-Track go-live.",
+    reference: "CLET CLLS Business Requirements Document (CLET-CLLS-BRD-001) §6 Integration Landscape; System Requirements Document (CLET-CLLS-BRD-SYS-001) §4 Integration Architecture."
+  },
+  {
+    text: "Finance services S141 and S138 are required for payment references, confirmation callbacks, and reconciliation.",
+    disclaimer: "S141/S138 release windows and the FMS reconciliation file format must be confirmed with CLET Finance before circulation go-live; any change to the file specification triggers a rework window in CLLS.",
+    reference: "CLET-CLLS-BRD-001 §5 Statutory & Financial Anchors; SRS FR-070..FR-078 (Payments & Reconciliation); Cluster C5 finance integration note."
+  },
+  {
+    text: "LMS (S029), database vendors, and repository-policy owners affect reading lists, off-campus access, and research workflows.",
+    disclaimer: "Vendor SSO configurations (Westlaw, LexisNexis, GhanaLii, HeinOnline) and LMS connector readiness sit outside the CLLS team's direct control; rollout of Phase 2 reading-list and EZproxy features is gated on these third parties.",
+    reference: "CLET-CLLS-BRD-001 §6 Integration Landscape; CLET-CLLS-US-001 epics for Discovery, Reading Lists, and Research Repository."
+  },
+  {
+    text: "Phase 3 RFID depends on stock tagging, floor power/data points, vendor procurement, and library-space readiness.",
+    disclaimer: "RFID is explicitly Phase 3 and not part of the Fast-Track baseline budget. Hardware lead times, building works, and stock-tagging effort can each independently delay activation.",
+    reference: "CLET-CLLS-PRES-001 (Stakeholder Presentation) Phase 3 roadmap; vendor implementation notes from Cykeo RFID and Bibliotheca self-check guides."
+  }
 ];
 
 const DELIVERY_DISCLAIMERS = [
-  "Scope remains flexible outside the Fast-Track baseline; prioritisation may change after policy clarification or dependency delays.",
-  "Collaboration with LRKS, DTI, Finance, IAM, LMS, and external database vendors is mandatory for successful rollout.",
-  "Key deliverables remain subject to policy clarity on external access, fines, retention, responsible AI, and procurement approvals.",
-  "All cost figures below are indicative planning estimates, not procurement quotes, and should be validated during sourcing."
+  {
+    title: "Flexibility",
+    text: "Scope outside the Fast-Track baseline (S104 ILS and S110 Legal Database Access) remains intentionally flexible; Phase 2 and Phase 3 items may be re-prioritised as policy decisions land or upstream dependencies move.",
+    disclaimer: "The Fast-Track scope is fixed at S104 (ILS) and S110 (Database Access) — scope creep into Phase 2 systems is not permitted before vesting day (1 July 2026). Phase 2 (Aug–Dec 2026) and Phase 3 (2027 onwards) sequencing may be adjusted by LRKS / DTI without re-baselining the programme, provided MoSCoW priorities are preserved. Any change to the Fast-Track set itself goes through the CLET Change Management process and requires re-sign-off by the BRD signatories.",
+    reference: "BRD §6.1 Fast-Track scope (S104, S110); BRD §6.2 Phase 2; BRD §6.3 Phase 3; BRD §8.2 Constraints — “The Fast-Track scope is fixed at S104 (ILS) and S110 (Database Access). Scope creep beyond this into Phase 2 systems is not permitted before vesting day.”; BRD §9 Approval & Sign-Off (CLET Change Management process)."
+  },
+  {
+    title: "Collaboration Dependencies",
+    text: "CLLS cannot be delivered by LRKS / DTI alone. Successful rollout depends on named owners and on-time interfaces from NLEMS (S027), HRMS (S140), IAM (S213), API Gateway (S217), Payment System (S141), e-Procurement (S132), the LMS (S029), and the contracted database vendors (Westlaw, LexisNexis, HeinOnline, GhanaLii).",
+    disclaimer: "Each upstream system and external vendor is owned outside the CLLS team. Slippage in any of NLEMS, HRMS, IAM, API Gateway, S141, or vendor SSO directly defers Fast-Track go-live. RFID tagging is explicitly Phase 3 and does not block Fast-Track or Phase 2. Absence of a named owner from a partner directorate is treated as a delivery risk and escalated to the CLET steering committee.",
+    reference: "BRD §8.1 Assumptions (NLEMS / HRMS via S217; S141 in production; vendor SSO for Westlaw, LexisNexis, HeinOnline, GhanaLii; RFID is Phase 3 only); BRD §6 Integration Landscape; SysRD §3 Integration Architecture; SysRD §9.2 System Integration Acceptance (end-to-end S141 fine-payment test); DTI/CLET/STAFF/2026/LLS-001 Technical Team Structure note (workstream RACI)."
+  },
+  {
+    title: "Policy Clarity",
+    text: "Several deliverables remain subject to policy decisions still pending at LRKS / CLET governance — external patron pricing, fine schedules, retention windows for borrowing history, responsible-AI guardrails for the Copilot, and procurement approval thresholds.",
+    disclaimer: "Build can proceed against placeholder values, but production go-live for the affected features is gated on signed-off policy. In particular: patron borrowing-history retention beyond 2 years requires explicit patron consent (DPA 2012); the AI Legal Copilot cannot be deployed to production without an approved DPIA from the CLET Data Protection Officer and adherence to the CLET Responsible-AI policy; all payments must be routed through the Finance system (Cluster C8) — CLLS may not independently hold, settle, or reconcile funds.",
+    reference: "Legal Education Act, 2026 (Ghana) — establishing instrument; §47 Legal Education Act, 2026 (WCAG 2.1 AA statutory obligation, BR-010.1); §§3(d–e) Legal Education Act, 2026 (research mandate); Ghana Data Protection Act, 2012 (BR-003.4 retention; BR-010.2 personal-data compliance); BRD §8.2 Constraints (DPA 2012 + DPIA via S185; payments routed through C8); SRS §7 Patron borrowing history retention &gt; 2 years requires patron consent; SRS DPIA pre-condition for AI Copilot production deployment; BR-009.2 Copilot governed by DPIA (S185) and CLET Responsible-AI policy."
+  }
 ];
 
 const COST_ESTIMATES = [
@@ -784,6 +841,82 @@ const COST_ESTIMATES = [
     estimate: "USD 35,000-75,000",
     detail: "Typical library project envelope covering kiosk hardware, RFID tags, reader/gate components, setup, and conversion activity. Final cost depends on holdings volume and building readiness.",
     sources: "Cykeo RFID (cykeorfid.com) library implementation guide; 2025 self-check market examples reviewed from library kiosk vendors."
+  }
+];
+
+const MODULE_BREAKDOWN = [
+  {
+    name: "Core ILS",
+    code: "M1",
+    color: "#1B3A6B",
+    systems: "S104 Integrated Library System · S107 Circulation · S108 Inter-Library Loan · S111 Authority Control",
+    purpose: "MARC21 cataloguing, circulation (checkout / return / renewal / holds), patron management, ILL routing, and the overdue & fines lifecycle.",
+    detail: "Core ILS is the operational heart of the library. Catalogue records are held as MARC21 with a Z39.50 / SRU import path from the Library of Congress, OCLC, and the British Library, then enriched locally with classification and authority data. The circulation engine issues, renews, and discharges items, manages hold queues, blocks patrons who exceed limits, and triggers overdue notices on a nightly schedule. Patron records are mastered in NLEMS for students and HRMS for staff, with self-registration available for external members; Core ILS consumes those identities rather than maintaining its own. Inter-library loan requests are routed through a partner directory and tracked end-to-end against the originating record so charges and recoveries stay tied to a single audit trail.",
+    keycloak: "Every staff and patron call carries an OIDC access token issued by Keycloak (S213). Core ILS validates the JWT at the API Gateway and uses RBAC roles — Patron, Librarian, Circulation Desk, Cataloguer, Acquisitions, Admin — to authorise specific endpoints and screens. Sensitive operations (write-off, manual fine adjustment, patron merge) require additional Keycloak group membership and are written to the audit log with the actor's IAM identity.",
+    finance: "Core ILS is the largest originator of finance events in CLLS. It raises charges to Payment Integration (S141) for overdue fines, lost-item replacement costs, membership fees, and ILL recovery. Each charge carries the patron ID, item reference, fee type, and amount so S141 can persist the obligation, present a payment URL, and post a settlement webhook back. Daily reconciliation files from S141 land in the Financial Management System (FMS), where the GL postings are applied against the library's revenue codes."
+  },
+  {
+    name: "Digital Resources",
+    code: "M2",
+    color: "#006064",
+    systems: "S110 Legal Database Integrations · S109 Electronic Resource Mgmt · S120 Off-Campus Auth (EZproxy)",
+    purpose: "Federated access to Westlaw, LexisNexis, GhanaLii, and HeinOnline; full subscription lifecycle; on- and off-campus entitlement enforcement.",
+    detail: "The Digital Resources module gives patrons a single front door to all licensed legal databases. Subscription metadata — vendor, package, term, seat count, COUNTER R5 endpoint — is held in the Electronic Resource Management system (S109) so that renewal windows, usage trends, and cost-per-download can be reported to LRKS leadership. On-campus access is granted by IP range; off-campus access is mediated by EZproxy (S120), which validates a Keycloak session before rewriting the request and forwarding it to the vendor. Usage statistics are pulled nightly from each vendor and aggregated into a cluster-wide dashboard so that under-utilised subscriptions can be challenged at renewal.",
+    keycloak: "Database SSO is brokered through Keycloak using SAML for vendors that require it (Westlaw, LexisNexis) and OIDC for those that accept it (HeinOnline, GhanaLii). A single Keycloak login therefore unlocks every subscribed database without re-authenticating. EZproxy treats the Keycloak session cookie as the source of truth for entitlement; if the user's group membership in IAM is removed, the next off-campus request fails immediately with no waiting period.",
+    finance: "Subscription invoices and renewal fees are raised against S141 so that the institutional payment gateway is the only path through which money leaves CLET for vendors. Where subscriptions are cost-shared across faculties, the daily reconciliation feed to FMS includes a split-posting block so each faculty's GL receives its share without manual journal entries."
+  },
+  {
+    name: "Research Repository",
+    code: "M3",
+    color: "#5B21B6",
+    systems: "S106 Research Repository · S122 Plagiarism Detection · S112 DOI / Persistent IDs · S121 Digital Preservation",
+    purpose: "Thesis and paper deposit, editorial review, OAI-PMH harvesting, plagiarism screening, DOI minting, and long-term digital preservation.",
+    detail: "The Research Repository is the institutional record of CLET's scholarly output. Authors deposit thesis manuscripts, working papers, and faculty publications through a guided workflow that captures licence, embargo, and supervisor metadata. Each submission is screened by the plagiarism service (S122) and routed into an editorial queue where reviewers can approve, request changes, or reject. Approved items are minted a DOI through CrossRef / DataCite (S112) and pushed into the digital preservation platform (S121) so that bit-level integrity is maintained over decades. The repository exposes an OAI-PMH endpoint for external harvesters and a public discovery interface for citation lookup.",
+    keycloak: "Author, Reviewer, Editor, and Repository Admin roles are issued by Keycloak. Embargo enforcement and visibility filters consult IAM group membership at request time, so revoking a researcher's affiliation immediately removes their write access without a separate repository sync. Reviewers see only the queues mapped to their faculty group, and editors retain a full audit trail of who approved or rejected each submission.",
+    finance: "Where the institution charges article processing charges (APC) or recovers ILL costs, those amounts are raised to S141 against the depositing author's patron record. Long-term preservation storage is metered by S121 and reported to FMS as an internal chargeback so each faculty sees the true cost of its research output."
+  },
+  {
+    name: "Discovery & Search",
+    code: "M4",
+    color: "#0277BD",
+    systems: "S105 Discovery Layer · S118 Reading List Management · OPAC front end",
+    purpose: "Unified search across catalogue, repository, and licensed databases; LMS-linked course reading lists; faceted relevance ranking.",
+    detail: "Discovery & Search is the unified front-of-house experience. The OPAC and the discovery layer (S105) sit on top of a single search index that ingests records from Core ILS, the Research Repository, and the licensed-database knowledge bases. Patrons can search across all of those with one query and refine using facets (format, subject, language, date, availability). Reading List Management (S118) is wired into the LMS so that lecturers can attach catalogue items, repository papers, and licensed-database links to specific courses; students see those lists inside both the LMS and the patron portal without an extra login. The module is intentionally read-mostly so it can scale to bursty traffic during term-time without putting load on the transactional ILS.",
+    keycloak: "Anonymous browse is allowed because public discoverability is a stated requirement, but anything personal — saved searches, requested holds, reading-list edits, history — requires a Keycloak login. The LMS-to-reading-list sync runs as a service account whose token is issued by Keycloak and scoped to the read-list write API only, so a compromised LMS connector cannot escalate into circulation.",
+    finance: "Discovery is read-only on the money path. Where a Discovery action implies a charge (e.g. a paid hold, a document-supply request, an ILL initiation) the request is handed off to Core ILS, which is then the system of record that talks to S141. This keeps a single, auditable origin point for every financial obligation."
+  },
+  {
+    name: "AI Legal Copilot",
+    code: "M5",
+    color: "#C8960C",
+    systems: "S125 AI Legal Copilot · S124 Knowledge Graph · supporting RAG services",
+    purpose: "Retrieval-augmented Q&amp;A over the CLLS corpus with grounded citations; legal knowledge-graph navigation; usage governance.",
+    detail: "The AI Legal Copilot is a Phase 2 capability built on retrieval-augmented generation (RAG). User questions are routed through the API Gateway, embedded, and matched against a vector index of the catalogue abstracts, repository full text, and selected licensed corpora. The top passages are sent to the language model along with the original question and a strict prompt template that forbids ungrounded answers. Every response is returned with clickable citations that link back to the originating record in Core ILS or the Repository. The Knowledge Graph (S124) provides linked-data navigation over statutes, judgments, and authorities so that researchers can traverse relationships rather than only running keyword searches.",
+    keycloak: "Per-role usage quotas are enforced from Keycloak claims so that students, staff, and external researchers have different daily token budgets. Sensitive corpora — for example internal legal opinions, draft judgments, or restricted teaching materials — are gated by explicit IAM group membership; users without the group never see those passages in retrieval results, not just in the final answer.",
+    finance: "Phase 2 metered usage (premium model tokens, optional vendor APIs) is accounted through S141 as an internal chargeback so that faculties or research groups see the true cost of their AI consumption. The reconciliation file to FMS includes per-faculty splits and a usage report so finance can challenge anomalous spend before invoices are paid."
+  }
+];
+
+const PLATFORM_SERVICES = [
+  {
+    name: "API Gateway (S217)",
+    role: "Single ingress for every module API.",
+    detail: "All client traffic — patron web, staff console, mobile, kiosks, LMS connectors — terminates at S217. The gateway validates the Keycloak-issued JWT before any business logic runs, enforces per-route rate limits, applies circuit breakers when downstream services degrade, and writes a structured audit record for every request. Modules therefore never have to re-implement authentication, throttling, or audit themselves."
+  },
+  {
+    name: "Keycloak / IAM (S213)",
+    role: "Cluster identity provider and authorisation broker.",
+    detail: "Keycloak federates NLEMS for students and HRMS for staff via scheduled provisioning and just-in-time login. External self-registered patrons live directly in Keycloak. It speaks OIDC to in-house modules and SAML to external database vendors that require it. Keycloak is the single place where roles, groups, MFA policy, password policy, and session lifetime are configured for the whole cluster."
+  },
+  {
+    name: "Payment Integration (S141)",
+    role: "Single payment broker for the C5 cluster.",
+    detail: "S141 is the only component that talks to the institutional payment gateway and to the FMS. Modules send it normalised charge requests; it persists the obligation, presents a hosted-checkout URL to the patron, captures the settlement webhook from the gateway, and produces a daily reconciliation file. This means there is one auditable money path for every CLLS finance event regardless of which module raised the charge."
+  },
+  {
+    name: "Notification &amp; Audit",
+    role: "Shared cluster service used by every module.",
+    detail: "A single notification service handles email and SMS for overdue notices, hold pickups, fine reminders, and editorial decisions, so message templates and delivery throttles are managed in one place. The audit log is append-only and tamper-evident, capturing actor, action, before/after state, and source IP; it is the primary evidence base for Ghana DPA 2012 compliance reviews."
   }
 ];
 
@@ -945,9 +1078,385 @@ function buildCirculationFlowchart() {
   `);
 }
 
+function buildModuleArchitecture() {
+  const modules = [
+    { x: 60,   color: "#1B3A6B", code: "M1", name: "Core ILS", sub: "S104 · S107 · S108 · S111" },
+    { x: 370,  color: "#006064", code: "M2", name: "Digital Resources", sub: "S110 · S109 · S120" },
+    { x: 680,  color: "#5B21B6", code: "M3", name: "Research Repository", sub: "S106 · S122 · S112 · S121" },
+    { x: 990,  color: "#0277BD", code: "M4", name: "Discovery &amp; Search", sub: "S105 · S118 · OPAC" },
+    { x: 1300, color: "#C8960C", code: "M5", name: "AI Legal Copilot", sub: "S125 · S124 · RAG" }
+  ];
+  const moduleY = 430, moduleW = 240, moduleH = 130;
+
+  const moduleBoxes = modules.map(m => `
+    <rect x="${m.x}" y="${moduleY}" width="${moduleW}" height="${moduleH}" rx="14" fill="#fff" stroke="${m.color}" stroke-width="4"/>
+    <text x="${m.x + moduleW/2}" y="${moduleY + 36}" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="${m.color}">${m.code} · ${m.name}</text>
+    <text x="${m.x + moduleW/2}" y="${moduleY + 70}" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#374151">${m.sub}</text>
+    <text x="${m.x + moduleW/2}" y="${moduleY + 102}" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6B7280">click → details in Overview</text>
+  `).join('');
+
+  // Each module → API Gateway (up) and → Finance (down)
+  const upArrows = modules.map(m => {
+    const cx = m.x + moduleW/2;
+    return `<path d="M${cx} ${moduleY} L${cx} 290" fill="none" stroke="${m.color}" stroke-width="2.5" marker-end="url(#archArrow)"/>`;
+  }).join('');
+
+  // Modules that interact with Finance: M1, M2, M3, M5 (M4 routes via M1)
+  const financeModules = [modules[0], modules[1], modules[2], modules[4]];
+  const financeArrows = financeModules.map(m => {
+    const cx = m.x + moduleW/2;
+    return `<path d="M${cx} ${moduleY + moduleH} L${cx} 700" fill="none" stroke="#C62828" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#archArrowRed)"/>`;
+  }).join('');
+
+  // M4 (Discovery) hands off to M1 for charges — small dashed arrow sideways
+  const discoveryToCore = `<path d="M${modules[3].x} ${moduleY + moduleH/2} C ${modules[3].x - 30} ${moduleY + moduleH/2}, ${modules[0].x + moduleW + 30} ${moduleY + moduleH + 40}, ${modules[0].x + moduleW} ${moduleY + moduleH/2}" fill="none" stroke="#6B7280" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#archArrowGrey)"/>
+    <text x="800" y="${moduleY + moduleH + 30}" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-style="italic" fill="#6B7280">Discovery hands charge requests to Core ILS</text>`;
+
+  return svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+      <defs>
+        <marker id="archArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1B3A6B"/>
+        </marker>
+        <marker id="archArrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#C62828"/>
+        </marker>
+        <marker id="archArrowGrey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6B7280"/>
+        </marker>
+        <marker id="archArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#2E7D32"/>
+        </marker>
+      </defs>
+
+      <rect x="0" y="0" width="1600" height="1000" fill="#F8FAFC"/>
+      <text x="800" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0F172A">CLLS — Module Architecture &amp; Integrations with Keycloak (S213) and Finance (S141)</text>
+      <text x="800" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#475569">Every module call is authenticated via Keycloak through the API Gateway. Charge-bearing modules post to the Payment Integration (S141), which reconciles into FMS.</text>
+
+      <!-- Users -->
+      <rect x="60" y="100" width="1480" height="70" rx="12" fill="#EEF2FF" stroke="#3730A3" stroke-width="2"/>
+      <text x="800" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#3730A3">Users &amp; Channels</text>
+      <text x="800" y="152" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">Patron Web / OPAC · Patron Portal · Staff Console · Mobile · Self-Issue Kiosks (Phase 3)</text>
+
+      <!-- Edge: API Gateway + Keycloak -->
+      <rect x="60" y="220" width="980" height="80" rx="12" fill="#fff" stroke="#1B3A6B" stroke-width="3"/>
+      <text x="550" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#1B3A6B">API Gateway (S217)</text>
+      <text x="550" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">JWT validation · routing · rate limit · audit · circuit breaker</text>
+
+      <rect x="1080" y="220" width="460" height="80" rx="12" fill="#fff" stroke="#2E7D32" stroke-width="3"/>
+      <text x="1310" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#2E7D32">🔐 Keycloak / IAM (S213)</text>
+      <text x="1310" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">OIDC · SAML · RBAC · NLEMS &amp; HRMS federation</text>
+
+      <!-- Channels → Gateway -->
+      <path d="M800 170 L800 220" fill="none" stroke="#3730A3" stroke-width="3" marker-end="url(#archArrow)"/>
+
+      <!-- Gateway ↔ Keycloak -->
+      <path d="M1040 260 L1080 260" fill="none" stroke="#2E7D32" stroke-width="3" marker-end="url(#archArrowGreen)"/>
+      <path d="M1080 275 L1040 275" fill="none" stroke="#2E7D32" stroke-width="3" marker-end="url(#archArrowGreen)"/>
+      <text x="1060" y="218" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#2E7D32">JWT / OIDC</text>
+
+      <!-- Modules -->
+      ${moduleBoxes}
+      ${upArrows}
+      <text x="120" y="320" font-family="Arial, sans-serif" font-size="11" fill="#1B3A6B">authenticated calls (JWT)</text>
+
+      <!-- Module band label -->
+      <text x="60" y="410" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#0F172A">Functional Modules (5)</text>
+
+      ${discoveryToCore}
+
+      <!-- Finance row -->
+      <rect x="60" y="700" width="980" height="90" rx="12" fill="#fff" stroke="#C62828" stroke-width="3"/>
+      <text x="550" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#C62828">💳 Payment Integration (S141)</text>
+      <text x="550" y="755" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">Fines · Membership Fees · Subscription Invoices · ILL Recovery · APC · Metered AI Usage</text>
+      <text x="550" y="775" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-style="italic" fill="#6B7280">7 payment types from CLLS · single broker for the C5 cluster</text>
+
+      <rect x="1080" y="700" width="460" height="90" rx="12" fill="#fff" stroke="#0E7490" stroke-width="3"/>
+      <text x="1310" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#0E7490">External Identity &amp; Data Sources</text>
+      <text x="1310" y="755" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">NLEMS · HRMS · LMS · Westlaw · LexisNexis · GhanaLii · HeinOnline</text>
+      <text x="1310" y="775" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-style="italic" fill="#6B7280">Federated into Keycloak &amp; consumed by modules via API Gateway</text>
+
+      <!-- Finance arrows from modules -->
+      ${financeArrows}
+      <text x="120" y="690" font-family="Arial, sans-serif" font-size="11" fill="#C62828">charge requests (REST)</text>
+
+      <!-- S141 → FMS -->
+      <rect x="350" y="870" width="400" height="80" rx="12" fill="#FFF7ED" stroke="#E65100" stroke-width="3"/>
+      <text x="550" y="900" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#E65100">📒 Financial Management System (FMS)</text>
+      <text x="550" y="925" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">Daily reconciliation · GL posting · revenue &amp; recovery reporting</text>
+      <path d="M550 790 L550 870" fill="none" stroke="#E65100" stroke-width="3" marker-end="url(#archArrow)"/>
+      <text x="565" y="835" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#E65100">daily reconciliation</text>
+
+      <!-- Keycloak ↔ External -->
+      <path d="M1310 300 L1310 700" fill="none" stroke="#0E7490" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#archArrow)"/>
+      <text x="1325" y="500" font-family="Arial, sans-serif" font-size="11" fill="#0E7490">user federation &amp; entitlement lookups</text>
+
+      <!-- Legend -->
+      <rect x="60" y="965" width="1480" height="30" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+      <text x="80" y="985" font-family="Arial, sans-serif" font-size="12" fill="#0F172A">Legend:</text>
+      <line x1="155" y1="982" x2="195" y2="982" stroke="#1B3A6B" stroke-width="3" marker-end="url(#archArrow)"/>
+      <text x="205" y="985" font-family="Arial, sans-serif" font-size="12" fill="#0F172A">authenticated API call</text>
+      <line x1="380" y1="982" x2="420" y2="982" stroke="#C62828" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#archArrowRed)"/>
+      <text x="430" y="985" font-family="Arial, sans-serif" font-size="12" fill="#0F172A">finance / payment flow</text>
+      <line x1="610" y1="982" x2="650" y2="982" stroke="#2E7D32" stroke-width="3" marker-end="url(#archArrowGreen)"/>
+      <text x="660" y="985" font-family="Arial, sans-serif" font-size="12" fill="#0F172A">identity / token exchange</text>
+      <line x1="850" y1="982" x2="890" y2="982" stroke="#6B7280" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#archArrowGrey)"/>
+      <text x="900" y="985" font-family="Arial, sans-serif" font-size="12" fill="#0F172A">internal module hand-off</text>
+    </svg>
+  `);
+}
+
+function buildSequenceDiagram(opts) {
+  const { title, subtitle, actors, messages, notes = [] } = opts;
+  const colW = 220;
+  const leftPad = 60;
+  const topPad = 110;
+  const headerH = 60;
+  const rowH = 60;
+  const lifelineTop = topPad + headerH + 20;
+  const lifelineBottom = lifelineTop + (messages.length + 1) * rowH + 30;
+  const width = leftPad * 2 + colW * (actors.length - 1) + 200;
+  const height = lifelineBottom + 90;
+
+  const actorX = i => leftPad + i * colW + 100;
+
+  const headers = actors.map((a, i) => `
+    <rect x="${actorX(i) - 90}" y="${topPad}" width="180" height="${headerH}" rx="10" fill="${a.color}" stroke="${a.color}" stroke-width="2"/>
+    <text x="${actorX(i)}" y="${topPad + 24}" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">${a.label}</text>
+    <text x="${actorX(i)}" y="${topPad + 45}" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#fff" opacity="0.9">${a.sub || ''}</text>
+  `).join('');
+
+  const lifelines = actors.map((a, i) => `
+    <line x1="${actorX(i)}" y1="${topPad + headerH}" x2="${actorX(i)}" y2="${lifelineBottom}" stroke="#94A3B8" stroke-width="2" stroke-dasharray="6 6"/>
+  `).join('');
+
+  const arrows = messages.map((msg, idx) => {
+    const y = lifelineTop + idx * rowH + 20;
+    if (msg.type === 'note') {
+      const x1 = actorX(msg.from);
+      const x2 = actorX(msg.to !== undefined ? msg.to : msg.from);
+      const left = Math.min(x1, x2) - 80;
+      const right = Math.max(x1, x2) + 80;
+      return `
+        <rect x="${left}" y="${y - 18}" width="${right - left}" height="36" rx="4" fill="#FFF7ED" stroke="#E65100" stroke-width="1.5"/>
+        <text x="${(left + right) / 2}" y="${y + 5}" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-style="italic" fill="#9A3412">${msg.label}</text>`;
+    }
+    const fromX = actorX(msg.from);
+    const toX = actorX(msg.to);
+    const isReturn = msg.type === 'return';
+    const stroke = msg.color || (isReturn ? '#2E7D32' : '#1B3A6B');
+    const dash = isReturn ? 'stroke-dasharray="6 4"' : '';
+    if (msg.from === msg.to) {
+      // self call
+      const r = 30;
+      return `
+        <path d="M${fromX} ${y} C${fromX + r * 2} ${y}, ${fromX + r * 2} ${y + 22}, ${fromX} ${y + 22}" fill="none" stroke="${stroke}" stroke-width="2" ${dash} marker-end="url(#seqArrow)"/>
+        <text x="${fromX + r * 2 + 10}" y="${y + 14}" font-family="Arial, sans-serif" font-size="12" fill="#0F172A">${msg.label}</text>`;
+    }
+    const dir = toX > fromX ? 1 : -1;
+    return `
+      <line x1="${fromX}" y1="${y}" x2="${toX}" y2="${y}" stroke="${stroke}" stroke-width="2.5" ${dash} marker-end="url(#seqArrow)"/>
+      <text x="${(fromX + toX) / 2}" y="${y - 7}" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#0F172A">${msg.label}</text>`;
+  }).join('');
+
+  return svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      <defs>
+        <marker id="seqArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1B3A6B"/>
+        </marker>
+      </defs>
+      <rect x="0" y="0" width="${width}" height="${height}" fill="#F8FAFC"/>
+      <text x="${width / 2}" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0F172A">${title}</text>
+      <text x="${width / 2}" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#475569">${subtitle}</text>
+      ${lifelines}
+      ${headers}
+      ${arrows}
+      ${notes.map(n => `<text x="${n.x}" y="${n.y}" font-family="Arial, sans-serif" font-size="11" font-style="italic" fill="#6B7280">${n.text}</text>`).join('')}
+    </svg>
+  `);
+}
+
+function buildSeqBorrow() {
+  return buildSequenceDiagram({
+    title: "Book Borrowing &amp; Checkout with Fine/Payment Cycle",
+    subtitle: "SD-01 · Patron borrows a book via the Circulation Desk; overdue triggers fine; payment routes via S141.",
+    actors: [
+      { label: "Patron",         sub: "Student / Staff",   color: "#1B3A6B" },
+      { label: "OPAC / Desk UI", sub: "Web client",        color: "#0277BD" },
+      { label: "Core ILS",       sub: "S104 Circulation",  color: "#006064" },
+      { label: "Keycloak",       sub: "S213 IAM",          color: "#2E7D32" },
+      { label: "Payment (S141)", sub: "Finance broker",    color: "#C62828" },
+      { label: "FMS",            sub: "Ledger",            color: "#E65100" }
+    ],
+    messages: [
+      { from: 0, to: 1, label: "1. Search &amp; request item" },
+      { from: 1, to: 3, label: "2. Authenticate (OIDC)" },
+      { from: 3, to: 1, label: "3. JWT token", type: "return" },
+      { from: 1, to: 2, label: "4. POST /checkout (item, patron)" },
+      { from: 2, to: 2, label: "5. Validate JWT &amp; patron blocks" },
+      { from: 2, to: 1, label: "6. Receipt + due date", type: "return" },
+      { from: 1, to: 0, label: "7. Confirmation + email", type: "return" },
+      { type: "note", from: 0, to: 5, label: "— time passes; item becomes overdue —" },
+      { from: 2, to: 2, label: "8. Nightly job: compute overdue fines" },
+      { from: 2, to: 4, label: "9. Raise fine charge" },
+      { from: 4, to: 2, label: "10. Charge ID + status", type: "return" },
+      { from: 2, to: 0, label: "11. Notify patron of fine" },
+      { from: 0, to: 4, label: "12. Pay fine (gateway)" },
+      { from: 4, to: 6, label: "13. Daily reconciliation feed" },
+      { from: 4, to: 2, label: "14. Settled webhook", type: "return" }
+    ]
+  });
+}
+
+function buildSeqPayment() {
+  return buildSequenceDiagram({
+    title: "Fine Calculation, Payment &amp; Finance Reconciliation",
+    subtitle: "SD-02 · End-to-end payment lifecycle from charge raise to FMS posting.",
+    actors: [
+      { label: "Patron",         sub: "Web / Mobile",      color: "#1B3A6B" },
+      { label: "Core ILS",       sub: "Charge originator", color: "#006064" },
+      { label: "Payment (S141)", sub: "Finance broker",    color: "#C62828" },
+      { label: "Gateway",        sub: "External PSP",      color: "#5B21B6" },
+      { label: "FMS",            sub: "GL / Reporting",    color: "#E65100" }
+    ],
+    messages: [
+      { from: 1, to: 1, label: "1. Compute charge (fine, fee, APC)" },
+      { from: 1, to: 2, label: "2. POST /charges {amount, type, ref}" },
+      { from: 2, to: 2, label: "3. Persist charge &amp; allocate ID" },
+      { from: 2, to: 1, label: "4. Charge ID + payment URL", type: "return" },
+      { from: 1, to: 0, label: "5. Notify patron (email/SMS)" },
+      { from: 0, to: 2, label: "6. Initiate payment" },
+      { from: 2, to: 3, label: "7. Hosted-checkout redirect" },
+      { from: 3, to: 0, label: "8. Capture card / mobile money", type: "return" },
+      { from: 3, to: 2, label: "9. Async settlement webhook" },
+      { from: 2, to: 1, label: "10. Mark charge as settled" },
+      { from: 1, to: 0, label: "11. Receipt + clear block", type: "return" },
+      { type: "note", from: 0, to: 4, label: "— end of day batch —" },
+      { from: 2, to: 4, label: "12. Daily reconciliation file (GL postings)" },
+      { from: 4, to: 2, label: "13. Recon ack + variances", type: "return" }
+    ]
+  });
+}
+
+function buildSeqAI() {
+  return buildSequenceDiagram({
+    title: "AI Legal-Research Copilot (RAG) — Phase 2",
+    subtitle: "SD-03 · Grounded answer flow with citations; quotas enforced via Keycloak claims.",
+    actors: [
+      { label: "User",           sub: "Patron / Staff",       color: "#1B3A6B" },
+      { label: "Copilot UI",     sub: "Web client",           color: "#0277BD" },
+      { label: "API Gateway",    sub: "S217",                 color: "#006064" },
+      { label: "Keycloak",       sub: "S213 IAM + quotas",    color: "#2E7D32" },
+      { label: "RAG Service",    sub: "S125 Copilot",         color: "#C8960C" },
+      { label: "Vector + KG",    sub: "S124 Knowledge Graph", color: "#5B21B6" },
+      { label: "LLM",            sub: "Hosted model",         color: "#C62828" }
+    ],
+    messages: [
+      { from: 0, to: 1, label: "1. Ask legal question" },
+      { from: 1, to: 2, label: "2. POST /copilot/query (JWT)" },
+      { from: 2, to: 3, label: "3. Validate token + quota" },
+      { from: 3, to: 2, label: "4. OK + role claims", type: "return" },
+      { from: 2, to: 4, label: "5. Forward query" },
+      { from: 4, to: 5, label: "6. Retrieve top-k passages" },
+      { from: 5, to: 4, label: "7. Passages + citations", type: "return" },
+      { from: 4, to: 6, label: "8. Prompt with grounded context" },
+      { from: 6, to: 4, label: "9. Draft answer", type: "return" },
+      { from: 4, to: 4, label: "10. Validate citations &amp; redact" },
+      { from: 4, to: 2, label: "11. Answer + sources", type: "return" },
+      { from: 2, to: 1, label: "12. Stream tokens", type: "return" },
+      { from: 1, to: 0, label: "13. Answer with clickable citations", type: "return" },
+      { type: "note", from: 0, to: 6, label: "— audit log written for every query (DPA compliance) —" }
+    ]
+  });
+}
+
+function buildUserStoryMap() {
+  const activities = [
+    { name: "Discover &amp; Search", color: "#1B3A6B" },
+    { name: "Register &amp; Onboard", color: "#006064" },
+    { name: "Borrow &amp; Return", color: "#2E7D32" },
+    { name: "Pay &amp; Reconcile", color: "#C62828" },
+    { name: "Research &amp; Deposit", color: "#5B21B6" },
+    { name: "AI &amp; Knowledge", color: "#C8960C" }
+  ];
+  const phases = [
+    { key: "ft", label: "Fast-Track", sub: "Live by 1 July 2026", color: "#C8960C", bg: "#FFF7ED" },
+    { key: "p2", label: "Phase 2",    sub: "Aug – Dec 2026",      color: "#0277BD", bg: "#EFF6FF" },
+    { key: "p3", label: "Phase 3",    sub: "Jan 2027 onwards",    color: "#5B21B6", bg: "#F5F3FF" }
+  ];
+  // stories per [activity][phase]
+  const stories = [
+    // Discover & Search
+    [["OPAC keyword search","Faceted filters","Item detail &amp; holds"],["Discovery layer (S105)","Reading lists (S118)","Saved searches"],["Knowledge graph navigation","Authority control (S111)"]],
+    // Register & Onboard
+    [["NLEMS auto-provision","HRMS staff sync","Self-registration"],["External patron portal","Profile self-service"],["RFID card issuance","Self-issue kiosks"]],
+    // Borrow & Return
+    [["Checkout / return","Renewals &amp; holds","Overdue notices"],["ILL routing (S108)","Bulk discharge"],["RFID self-issue","Sorter integration"]],
+    // Pay & Reconcile
+    [["Fines via S141","Membership fee","Daily FMS recon"],["ILL recovery fees","Subscription invoices"],["Cost-recovery splits","Internal chargebacks"]],
+    // Research & Deposit
+    [["Repository browse"],["Thesis deposit","Plagiarism (S122)","Editorial review","DOI minting (S112)"],["Digital preservation (S121)","OAI-PMH harvesting"]],
+    // AI & Knowledge
+    [["—"],["RAG copilot (S125)","Grounded citations","Usage quotas"],["Knowledge graph (S124)","Linked-data queries"]]
+  ];
+
+  const colW = 230;
+  const headerH = 90;
+  const rowGap = 14;
+  const cardH = 38;
+  const leftPad = 60;
+  const topPad = 110;
+
+  // Compute heights per phase row
+  const phaseHeights = phases.map((_, pi) => {
+    const max = Math.max(...stories.map(act => act[pi].length));
+    return max * (cardH + 8) + 24;
+  });
+  const totalH = topPad + headerH + phaseHeights.reduce((a,b)=>a+b+rowGap, 0) + 60;
+  const width = leftPad * 2 + colW * activities.length;
+
+  const actHeaders = activities.map((a, i) => `
+    <rect x="${leftPad + i*colW + 6}" y="${topPad}" width="${colW - 12}" height="${headerH - 10}" rx="10" fill="${a.color}"/>
+    <text x="${leftPad + i*colW + colW/2}" y="${topPad + 32}" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">Activity</text>
+    <text x="${leftPad + i*colW + colW/2}" y="${topPad + 56}" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#fff">${a.name}</text>
+  `).join('');
+
+  let yCursor = topPad + headerH;
+  const rows = phases.map((p, pi) => {
+    const rowH = phaseHeights[pi];
+    const bandLabel = `
+      <rect x="0" y="${yCursor}" width="${width}" height="${rowH}" fill="${p.bg}" stroke="${p.color}" stroke-width="0"/>
+      <rect x="0" y="${yCursor}" width="6" height="${rowH}" fill="${p.color}"/>
+      <text x="14" y="${yCursor + 22}" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="${p.color}">${p.label}</text>
+      <text x="14" y="${yCursor + 40}" font-family="Arial, sans-serif" font-size="11" fill="#475569">${p.sub}</text>
+    `;
+    const cards = activities.map((a, ai) => {
+      return stories[ai][pi].map((s, si) => `
+        <rect x="${leftPad + ai*colW + 10}" y="${yCursor + 10 + si*(cardH+8)}" width="${colW - 20}" height="${cardH}" rx="6" fill="#fff" stroke="${a.color}" stroke-width="1.5"/>
+        <text x="${leftPad + ai*colW + colW/2}" y="${yCursor + 10 + si*(cardH+8) + cardH/2 + 4}" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#0F172A">${s}</text>
+      `).join('');
+    }).join('');
+    const out = bandLabel + cards;
+    yCursor += rowH + rowGap;
+    return out;
+  }).join('');
+
+  return svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${totalH}" viewBox="0 0 ${width} ${totalH}">
+      <rect x="0" y="0" width="${width}" height="${totalH}" fill="#F8FAFC"/>
+      <text x="${width/2}" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0F172A">User Story Map — Activities × Delivery Phases</text>
+      <text x="${width/2}" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#475569">USM-01 · Columns are user activities (left → right journey). Rows are delivery phases (top → bottom over time).</text>
+      ${actHeaders}
+      ${rows}
+    </svg>
+  `);
+}
+
 Object.assign(STAKEHOLDERS.overview, {
   desc: "The CLLS is the software-pillar system for Cluster C5 — Library, Research & Knowledge Services. It consolidates all 18 C5 systems into a single integrated legal-library and knowledge-services platform owned by LRKS and delivered with DTI.",
-  tags: ["Software Pillar", "Cluster C5", "LRKS Owned", "18 Systems", "Custom Build"]
+  tags: ["Software Pillar", "Cluster C5", "LRKS Owned", "18 Systems", "Custom Build"],
+  diagrams: ["arch_modules", "seq_borrow", "seq_payment", "seq_ai", "flow_circulation", "flow_patron", "user_story_map"]
 });
 
 DOCUMENTS.find(doc => doc.ref === "DTI/CLET/STAFF/2026/LLS-001").desc = "10-person recommended team · workstream split · 2-month staffing plan · production-readiness roles";
@@ -958,6 +1467,171 @@ ROADMAP_DATA.p3.items = ROADMAP_DATA.p3.items.map(item =>
 );
 ASSETS.diagrams.flow_patron = { src: buildPatronFlowchart() };
 ASSETS.diagrams.flow_circulation = { src: buildCirculationFlowchart() };
+ASSETS.diagrams.arch_modules = { src: buildModuleArchitecture() };
+ASSETS.diagrams.seq_borrow = { src: buildSeqBorrow() };
+ASSETS.diagrams.seq_payment = { src: buildSeqPayment() };
+ASSETS.diagrams.seq_ai = { src: buildSeqAI() };
+ASSETS.diagrams.user_story_map = { src: buildUserStoryMap() };
+
+// ── Mermaid versions of flowcharts and sequence diagrams ────────────────
+const MERMAID_DIAGRAMS = {
+  flow_patron: `flowchart TD
+    Start([Patron applies / arrives]) --> Class{Patron class?}
+    Class -- "Student" --> NLEMS[Pull record from NLEMS S027]
+    Class -- "Staff" --> HRMS[Pull record from HRMS S140]
+    Class -- "External / Public" --> SelfReg[Self-registration form on portal]
+    NLEMS --> Verify[Verify identity & enrolment]
+    HRMS --> Verify
+    SelfReg --> KYC{KYC documents valid?}
+    KYC -- "No" --> RejectKYC[Reject application & notify applicant]
+    KYC -- "Yes" --> Verify
+    Verify --> Provision[Create / link Keycloak S213 account]
+    Provision --> Roles[Assign RBAC roles & library group]
+    Roles --> ChargeQ{Membership fee due?}
+    ChargeQ -- "No" --> Issue[Issue patron card / barcode]
+    ChargeQ -- "Yes" --> Pay[Raise charge to Payment S141]
+    Pay --> Settled{Payment settled?}
+    Settled -- "No" --> Hold[Hold activation & notify patron]
+    Settled -- "Yes" --> Issue
+    Issue --> Notify[Email confirmation + welcome pack]
+    Notify --> Done([Patron active in CLLS])
+    RejectKYC --> EndR([End — no account created])
+    Hold --> EndH([End — pending payment])`,
+
+  flow_circulation: `flowchart TD
+    Start([Patron requests action]) --> Auth[Authenticate via Keycloak S213]
+    Auth --> Action{Action type?}
+    Action -- "Borrow" --> Avail{Item available?}
+    Avail -- "No" --> Hold[Place hold in queue]
+    Avail -- "Yes" --> Block{Patron blocked?}
+    Block -- "Yes" --> BlockMsg[Show block reason & required action]
+    Block -- "No" --> Issue[Checkout: due date, receipt, email]
+    Issue --> Loan([On loan])
+    Action -- "Renew" --> RenLimit{Renewal limit reached or hold queued?}
+    RenLimit -- "Yes" --> NoRenew[Reject renewal — notify patron]
+    RenLimit -- "No" --> Renew[Extend due date]
+    Renew --> Loan
+    Action -- "Return" --> Discharge[Discharge item & update inventory]
+    Discharge --> Overdue{Overdue?}
+    Overdue -- "No" --> Cleared([Cleared])
+    Overdue -- "Yes" --> Fine[Compute fine]
+    Fine --> RaiseCharge[Raise charge to Payment S141]
+    RaiseCharge --> PayWait{Patron pays?}
+    PayWait -- "Yes" --> Recon[Daily reconciliation feed to FMS]
+    Recon --> Cleared
+    PayWait -- "No" --> ApplyBlock[Apply patron block until settled]
+    ApplyBlock --> EndB([Awaiting payment])
+    Hold --> EndH([Awaiting availability])
+    BlockMsg --> EndBl([No checkout])`,
+
+  arch_modules: `flowchart TB
+    subgraph Channels["Users & Channels"]
+      U1[Patron OPAC / Portal]
+      U2[Staff Console]
+      U3[Mobile]
+      U4[Self-Issue Kiosks - Phase 3]
+      U5[LMS Connector]
+    end
+    Channels --> GW[API Gateway S217<br/>JWT validation · routing · rate limit · audit]
+    GW <-->|OIDC / JWT| KC[(Keycloak / IAM S213<br/>OIDC · SAML · RBAC)]
+    KC <-->|federation| EXT[NLEMS · HRMS · LMS · Westlaw · LexisNexis · GhanaLii · HeinOnline]
+
+    GW --> M1[M1 Core ILS<br/>S104 · S107 · S108 · S111]
+    GW --> M2[M2 Digital Resources<br/>S110 · S109 · S120]
+    GW --> M3[M3 Research Repository<br/>S106 · S122 · S112 · S121]
+    GW --> M4[M4 Discovery & Search<br/>S105 · S118 · OPAC]
+    GW --> M5[M5 AI Legal Copilot<br/>S125 · S124 · RAG]
+
+    M4 -. hands off charges .-> M1
+
+    M1 -->|fines · membership · ILL recovery| PAY[Payment Integration S141]
+    M2 -->|subscription invoices| PAY
+    M3 -->|APC · ILL recovery| PAY
+    M5 -->|metered AI usage| PAY
+    PAY -->|daily reconciliation| FMS[(Financial Management System / FMS<br/>GL posting · revenue & recovery reporting)]
+
+    classDef mod fill:#fff,stroke:#1B3A6B,stroke-width:2px,color:#0F172A;
+    classDef iam fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20;
+    classDef fin fill:#FFEBEE,stroke:#C62828,stroke-width:2px,color:#B71C1C;
+    classDef ext fill:#F1F5F9,stroke:#0E7490,stroke-width:1.5px,color:#0F172A;
+    class M1,M2,M3,M4,M5 mod;
+    class KC,EXT iam;
+    class PAY,FMS fin;
+    class GW ext;`,
+
+  seq_borrow: `sequenceDiagram
+    autonumber
+    actor Patron
+    participant UI as OPAC / Desk UI
+    participant ILS as Core ILS (S104)
+    participant KC as Keycloak (S213)
+    participant Pay as Payment (S141)
+    participant FMS as FMS
+
+    Patron->>UI: Search & request item
+    UI->>KC: Authenticate (OIDC)
+    KC-->>UI: JWT token
+    UI->>ILS: POST /checkout {item, patron}
+    ILS->>ILS: Validate JWT & patron blocks
+    ILS-->>UI: Receipt + due date
+    UI-->>Patron: Confirmation + email
+    Note over Patron,FMS: Time passes — item becomes overdue
+    ILS->>ILS: Nightly job — compute overdue fines
+    ILS->>Pay: Raise fine charge
+    Pay-->>ILS: Charge ID + status
+    ILS-->>Patron: Notify of fine
+    Patron->>Pay: Pay fine via gateway
+    Pay->>FMS: Daily reconciliation feed
+    Pay-->>ILS: Settled webhook (clear block)`,
+
+  seq_payment: `sequenceDiagram
+    autonumber
+    actor Patron
+    participant ILS as Core ILS
+    participant Pay as Payment (S141)
+    participant GW as External Gateway / PSP
+    participant FMS as FMS (GL)
+
+    ILS->>ILS: Compute charge (fine, fee, APC)
+    ILS->>Pay: POST /charges {amount, type, ref}
+    Pay->>Pay: Persist charge & allocate ID
+    Pay-->>ILS: Charge ID + payment URL
+    ILS-->>Patron: Notify (email/SMS)
+    Patron->>Pay: Initiate payment
+    Pay->>GW: Hosted-checkout redirect
+    GW-->>Patron: Capture card / mobile money
+    GW->>Pay: Async settlement webhook
+    Pay->>ILS: Mark charge as settled
+    ILS-->>Patron: Receipt + clear block
+    Note over Patron,FMS: End of day batch
+    Pay->>FMS: Daily reconciliation file (GL postings)
+    FMS-->>Pay: Recon ack + variances`,
+
+  seq_ai: `sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Copilot UI
+    participant GW as API Gateway (S217)
+    participant KC as Keycloak (S213)
+    participant RAG as RAG Service (S125)
+    participant KG as Vector + KG (S124)
+    participant LLM as Hosted LLM
+
+    User->>UI: Ask legal question
+    UI->>GW: POST /copilot/query (JWT)
+    GW->>KC: Validate token + quota
+    KC-->>GW: OK + role claims
+    GW->>RAG: Forward query
+    RAG->>KG: Retrieve top-k passages
+    KG-->>RAG: Passages + citations
+    RAG->>LLM: Prompt with grounded context
+    LLM-->>RAG: Draft answer
+    RAG->>RAG: Validate citations & redact
+    RAG-->>GW: Answer + sources
+    GW-->>UI: Stream tokens
+    UI-->>User: Answer with clickable citations
+    Note over User,LLM: Audit log written for every query (DPA 2012)`
+};
 </script>
 <script>
 // ════════════════════════════════════════════════════════════════════════════
@@ -995,10 +1669,14 @@ function renderContent() {
   switch(currentTab) {
     case 'overview-tab':     el.innerHTML = renderOverview(sh); break;
     case 'screens-tab':      el.innerHTML = renderScreens(sh); break;
-    case 'diagrams-tab':     el.innerHTML = renderDiagrams(sh); break;
+    case 'diagrams-tab':     el.innerHTML = renderDiagrams(sh); renderMermaidIn(el); break;
     case 'requirements-tab': el.innerHTML = renderRequirements(sh); break;
     case 'stories-tab':      el.innerHTML = renderStories(sh); break;
-    case 'roadmap-tab':      el.innerHTML = renderRoadmap(sh); break;
+    case 'roadmap-tab':        el.innerHTML = renderRoadmap(sh); break;
+    case 'team-tab':           el.innerHTML = renderTeam(); break;
+    case 'infrastructure-tab': el.innerHTML = renderInfrastructure(); break;
+    case 'dependencies-tab':   el.innerHTML = renderDependencies(); break;
+    case 'costs-tab':          el.innerHTML = renderCosts(); break;
     case 'docs-tab':         el.innerHTML = renderDocuments(); break;
   }
 }
@@ -1045,6 +1723,58 @@ function renderSystemOverviewSections() {
       <div class="cards-grid col4">${contextCards}</div>
     </div>
     <div class="mb24">
+      <div class="section-head mb16"><h2>Module Breakdown — Architecture &amp; Integrations</h2><span class="sh-sub">How each functional module connects to Keycloak (S213) and Finance (S141)</span></div>
+      <div class="detail-block" style="border-left-color:#0F172A">
+        <div class="dbl-head"><span class="dbl-code" style="background:#0F172A">AD-01</span><h3>Architecture at a Glance</h3></div>
+        <p class="dbl-detail">CLLS is built as <strong>five functional modules</strong> sitting behind a single <strong>API Gateway (S217)</strong>. Every API call — whether it originates from the patron OPAC, the staff console, the LMS connector, a kiosk, or a mobile client — is authenticated by <strong>Keycloak / IAM (S213)</strong> using OIDC tokens before any business logic runs. Any event that creates, modifies, or settles a financial obligation is posted to <strong>Payment Integration (S141)</strong>, which is the only component that talks to the institutional payment gateway and to the <strong>Financial Management System (FMS)</strong>. The result is a single auditable money path and a single auditable identity path for the entire cluster. The full visual layout is diagram <strong>AD-01</strong> in the Diagrams tab.</p>
+      </div>
+      ${MODULE_BREAKDOWN.map(m => `
+        <div class="detail-block" style="border-left-color:${m.color}">
+          <div class="dbl-head">
+            <span class="dbl-code" style="background:${m.color}">${m.code}</span>
+            <h3>${m.name}</h3>
+          </div>
+          <div class="dbl-systems">Systems in scope: ${m.systems}</div>
+          <div class="dbl-purpose">${m.purpose}</div>
+          <div class="dbl-detail">${m.detail}</div>
+          <div class="dbl-row">
+            <div class="dbl-label" style="color:#2E7D32">🔐 Keycloak (S213)</div>
+            <div class="dbl-body">${m.keycloak}</div>
+          </div>
+          <div class="dbl-row">
+            <div class="dbl-label" style="color:#C62828">💳 Finance (S141)</div>
+            <div class="dbl-body">${m.finance}</div>
+          </div>
+        </div>
+      `).join('')}
+      <div class="section-head mb16" style="margin-top:24px"><h2>Cross-Cutting Platform Services</h2><span class="sh-sub">Shared services every module depends on</span></div>
+      ${PLATFORM_SERVICES.map(s => `
+        <div class="detail-block" style="border-left-color:#0E7490">
+          <div class="dbl-head"><h3>${s.name}</h3></div>
+          <div class="dbl-purpose">${s.role}</div>
+          <div class="dbl-detail">${s.detail}</div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function renderTeam() {
+  const teamHtml = TEAM_COMPOSITION.map(item =>
+    `<li><strong>${item.count}× ${item.role}</strong> — ${item.focus}</li>`
+  ).join('');
+  const trainingHtml = TRAINING_PLAN.map(item => `
+    <div class="info-card" style="border-color:#0E7490">
+      <h3>${item.group}</h3>
+      <p>${item.plan}</p>
+    </div>
+  `).join('');
+  return `
+    <div class="hero" style="padding:24px 32px;margin-bottom:24px">
+      <div class="hero-label">👥 Team & Training</div>
+      <div class="hero-title" style="font-size:24px">Recommended Team Composition</div>
+      <div class="hero-sub" style="font-size:13px">10-person delivery team structured for parallel execution across a 2-month Fast-Track build window.</div>
+    </div>
+    <div class="mb24">
       <div class="section-head mb16"><h2>Recommended Team Composition</h2><span class="sh-sub">10-person delivery team for parallel execution</span></div>
       <div class="cards-grid col2">
         <div class="info-card" style="border-color:#1B3A6B">
@@ -1071,6 +1801,15 @@ function renderSystemOverviewSections() {
         </div>
       </div>
       <div class="cards-grid col3" style="margin-top:16px">${trainingHtml}</div>
+    </div>`;
+}
+
+function renderInfrastructure() {
+  return `
+    <div class="hero" style="padding:24px 32px;margin-bottom:24px">
+      <div class="hero-label">🖥️ Infrastructure & Tools</div>
+      <div class="hero-title" style="font-size:24px">Infrastructure & Tools Required</div>
+      <div class="hero-sub" style="font-size:13px">Hardware, software, and platform tooling needed beyond the application layer itself.</div>
     </div>
     <div class="mb24">
       <div class="section-head mb16"><h2>Infrastructure & Tools Required</h2><span class="sh-sub">Hardware and software, not only application architecture</span></div>
@@ -1085,23 +1824,95 @@ function renderSystemOverviewSections() {
           <ul>${INFRASTRUCTURE_TOOLS.software.map(item => `<li>${item}</li>`).join('')}</ul>
         </div>
       </div>
+    </div>`;
+}
+
+function renderDependencies() {
+  const depHtml = DELIVERY_DEPENDENCIES.map(item => `
+    <div class="detail-block" style="border-left-color:#0E7490">
+      <div class="dbl-detail" style="font-weight:600">${item.text}</div>
+      <div class="dbl-row">
+        <div class="dbl-label" style="color:#C62828">⚠ Disclaimer</div>
+        <div class="dbl-body">${item.disclaimer}</div>
+      </div>
+      <div class="dbl-row">
+        <div class="dbl-label" style="color:#1B3A6B">📚 References — Constraints &amp; Dependencies</div>
+        <div class="dbl-body">${item.reference}</div>
+      </div>
+    </div>`).join('');
+
+  const discHtml = DELIVERY_DISCLAIMERS.map(item => `
+    <div class="detail-block" style="border-left-color:#C62828">
+      <div class="dbl-head">
+        <span class="dbl-code" style="background:#C62828">DISCLAIMER</span>
+        <h3>${item.title}</h3>
+      </div>
+      <div class="dbl-detail" style="font-weight:600">${item.text}</div>
+      <div class="dbl-row">
+        <div class="dbl-label" style="color:#C62828">⚠ Disclaimer</div>
+        <div class="dbl-body">${item.disclaimer}</div>
+      </div>
+      <div class="dbl-row">
+        <div class="dbl-label" style="color:#1B3A6B">📚 References — Constraints &amp; Dependencies</div>
+        <div class="dbl-body">${item.reference}</div>
+      </div>
+    </div>`).join('');
+
+  return `
+    <div class="hero" style="padding:24px 32px;margin-bottom:24px">
+      <div class="hero-label">🔗 Dependencies &amp; Disclaimers</div>
+      <div class="hero-title" style="font-size:24px">Dependencies &amp; Disclaimers</div>
+      <div class="hero-sub" style="font-size:13px">Planning caveats, collaboration dependencies, and delivery confidence factors — each with explicit disclaimer and source reference.</div>
+    </div>
+    <div class="mb24">
+      <div class="section-head mb16"><h2>Collaboration Dependencies</h2><span class="sh-sub">Upstream systems and partners CLLS relies on</span></div>
+      ${depHtml}
+    </div>
+    <div class="mb24">
+      <div class="section-head mb16"><h2>Delivery Disclaimers</h2><span class="sh-sub">Flexibility, collaboration mandate, policy clarity, and cost caveats</span></div>
+      ${discHtml}
+    </div>`;
+}
+
+function renderCosts() {
+  const costHtml = COST_ESTIMATES.map(item => `
+    <div class="info-card" style="border-color:#C8960C">
+      <h3>${item.title}</h3>
+      <p><strong>${item.estimate}</strong><br/>${item.detail}</p>
+      <div class="source-note"><strong>Sources:</strong> ${item.sources}</div>
+    </div>
+  `).join('');
+
+  const costDisclaimers = DELIVERY_DISCLAIMERS.map(item => `
+    <div class="detail-block" style="border-left-color:#C62828">
+      <div class="dbl-head">
+        <span class="dbl-code" style="background:#C62828">DISCLAIMER</span>
+        <h3>${item.title}</h3>
+      </div>
+      <div class="dbl-detail" style="font-weight:600">${item.text}</div>
+      <div class="dbl-row">
+        <div class="dbl-label" style="color:#C62828">⚠ Disclaimer</div>
+        <div class="dbl-body">${item.disclaimer}</div>
+      </div>
+      <div class="dbl-row">
+        <div class="dbl-label" style="color:#1B3A6B">📚 References — Constraints &amp; Dependencies</div>
+        <div class="dbl-body">${item.reference}</div>
+      </div>
+    </div>`).join('');
+
+  return `
+    <div class="hero" style="padding:24px 32px;margin-bottom:24px">
+      <div class="hero-label">💰 Indicative Cost Envelope</div>
+      <div class="hero-title" style="font-size:24px">Planning Cost Estimates</div>
+      <div class="hero-sub" style="font-size:13px">These are indicative planning estimates, not procurement quotes. All figures should be validated during sourcing.</div>
     </div>
     <div class="mb24">
       <div class="section-head mb16"><h2>Indicative Cost Envelope</h2><span class="sh-sub">Planning estimate only — not a procurement quote</span></div>
       <div class="cards-grid col3">${costHtml}</div>
     </div>
     <div class="mb24">
-      <div class="section-head mb16"><h2>Dependencies & Disclaimers</h2><span class="sh-sub">Planning caveats that affect delivery confidence</span></div>
-      <div class="cards-grid col2">
-        <div class="info-card" style="border-color:#0E7490">
-          <h3>Collaboration Dependencies</h3>
-          <ul>${DELIVERY_DEPENDENCIES.map(item => `<li>${item}</li>`).join('')}</ul>
-        </div>
-        <div class="info-card" style="border-color:#C62828">
-          <h3>Delivery Disclaimers</h3>
-          <ul>${DELIVERY_DISCLAIMERS.map(item => `<li>${item}</li>`).join('')}</ul>
-        </div>
-      </div>
+      <div class="section-head mb16"><h2>Cost-Related Disclaimers &amp; References</h2><span class="sh-sub">Flexibility, scope, and procurement caveats</span></div>
+      ${costDisclaimers}
     </div>`;
 }
 
@@ -1195,22 +2006,33 @@ function renderDiagrams(sh) {
   }).join('');
 
   const ad = DIAGRAM_DATA[activeDiag];
+  const mermaidSrc = MERMAID_DIAGRAMS[activeDiag];
   const adImg = ASSETS.diagrams[activeDiag];
+
+  const viewer = mermaidSrc
+    ? `<div class="diagram-viewer mermaid-viewer">
+         <pre class="mermaid" id="mermaid-${activeDiag}">${mermaidSrc.replace(/</g,'&lt;')}</pre>
+         <div class="d-caption">
+           <span class="d-title">${ad.title}</span>
+           <span class="d-ref-badge">${ad.ref}</span>
+         </div>
+       </div>`
+    : `<div class="diagram-viewer">
+         <img src="${adImg.src}" alt="${ad.title}" onclick="openLightbox('${adImg.src}','${ad.title}')" style="cursor:zoom-in"/>
+         <div class="d-caption">
+           <span class="d-title">${ad.title}</span>
+           <span class="d-ref-badge">${ad.ref}</span>
+         </div>
+       </div>`;
 
   return `
     <div class="hero" style="padding:24px 32px;margin-bottom:24px">
       <div class="hero-label">📊 Diagrams — ${sh.label}</div>
       <div class="hero-title" style="font-size:24px">${sh.diagrams.length} Diagrams for this Stakeholder</div>
-      <div class="hero-sub" style="font-size:13px">Select a diagram below to view. Click the diagram image to open full-size.</div>
+      <div class="hero-sub" style="font-size:13px">Select a diagram below to view. Mermaid diagrams render as crisp SVG; click image diagrams to open full-size.</div>
     </div>
     <div class="diagram-tabs">${tabsHtml}</div>
-    <div class="diagram-viewer">
-      <img src="${adImg.src}" alt="${ad.title}" onclick="openLightbox('${adImg.src}','${ad.title}')" style="cursor:zoom-in"/>
-      <div class="d-caption">
-        <span class="d-title">${ad.title}</span>
-        <span class="d-ref-badge">${ad.ref}</span>
-      </div>
-    </div>`;
+    ${viewer}`;
 }
 
 function renderRequirements(sh) {
@@ -1340,6 +2162,33 @@ function closeLightbox() {
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLightbox(); });
+
+// ── Mermaid render helpers ──────────────────────────────────────────────
+if (typeof mermaid !== 'undefined') {
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    securityLevel: 'loose',
+    flowchart: { htmlLabels: true, curve: 'basis', padding: 16 },
+    sequence: { showSequenceNumbers: true, mirrorActors: false, wrap: true, width: 160 },
+    themeVariables: {
+      primaryColor: '#EFF6FF',
+      primaryTextColor: '#0F172A',
+      primaryBorderColor: '#1B3A6B',
+      lineColor: '#1B3A6B',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '14px'
+    }
+  });
+}
+function renderMermaidIn(root) {
+  if (typeof mermaid === 'undefined') return;
+  const nodes = root.querySelectorAll('pre.mermaid');
+  if (!nodes.length) return;
+  // Reset processed flag in case of re-render
+  nodes.forEach(n => { n.removeAttribute('data-processed'); });
+  try { mermaid.run({ nodes }); } catch (e) { console.warn('mermaid render failed', e); }
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 // INIT
